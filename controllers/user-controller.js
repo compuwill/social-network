@@ -1,4 +1,4 @@
-const { User } = require('../models');
+const { User, Thought } = require('../models');
 
 const userController = {
     // get all users
@@ -75,10 +75,67 @@ const userController = {
                     res.status(404).json({ message: 'No user found with this id!' });
                     return;
                 }
+                //delete all thoughts related to user
+                dbUserData.thoughts.forEach( element => {
+                    Thought.findByIdAndDelete(element._id, function(err) {
+                        if (err) {
+                            console.log(err);
+                        }
+                    })
+                })
                 res.json(dbUserData);
             })
             .catch(err => res.status(400).json(err));
+    },
+
+
+    addFriend({ params }, res) {
+        User.findOneAndUpdate(
+            { _id: params.userId },
+            { $push: { friends: params.friendId } }
+        )
+            .then(dbUserData => {
+                if (!dbUserData) {
+                    res.status(404).json({ message: 'No user found with this id!' });
+                    return;
+                }
+                //add the friend to the other friend
+                User.findOneAndUpdate(
+                    { _id: params.friendId },
+                    { $push: { friends: params.userId } }
+                )
+                    .then(dbFriendData => {
+                        if (!dbFriendData) {
+                            res.status(404).json({ message: 'No friend found with this id!' });
+                            return;
+                        }
+                        res.json({message: dbUserData.username + ' is now friends with '+dbFriendData.username});
+                    })
+                    .catch(err => res.json(err));
+            })
+            .catch(err => res.json(err));
+    },
+
+    removeFriend({ params }, res) {
+        User.findOneAndUpdate(
+            { _id: params.userId },
+            { $pull: { friends:  params.friendId  } }
+        )
+            .then(dbUserData => {
+                //remove user from friends list
+                User.findOneAndUpdate(
+                    { _id: params.friendId },
+                    { $pull: { friends:  params.userId  } }
+                )
+                    .then(dbFriendData => {                        
+                        res.json({message: dbUserData.username + ' is no longer friends with '+dbFriendData.username});
+                    })
+                    .catch(err => res.json(err));
+            })
+            .catch(err => res.json(err));
     }
+
+
 
 }
 
