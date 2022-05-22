@@ -14,10 +14,22 @@ const ThoughtSchema = new Schema(
             default: Date.now,
             get: createdAtVal => dateFormat(createdAtVal)
         },
-        user: {
+        username: {
                 type: Schema.Types.ObjectId,
                 ref: 'User'
             }
         
     },
+    {
+        toJSON: {
+            virtuals: true,
+            getters: true
+          }
+    }
 )
+
+// create the Thought model using the ThoughtSchema
+const Thought = model('Thought', ThoughtSchema);
+
+// export the Thought model
+module.exports = Thought;
