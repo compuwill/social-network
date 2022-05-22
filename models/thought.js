@@ -17,7 +17,7 @@ const ReactionSchema = new Schema(
         {
             type: String,
             required: true
-        },
+        },        
         createdAt: {
             type: Date,
             default: Date.now,
@@ -44,13 +44,7 @@ const ThoughtSchema = new Schema(
             type: String,
             required: true
         },
-        reactions: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: 'Reaction'
-            }
-        ]
-
+        reactions: [ReactionSchema]
     },
     {
         toJSON: {
